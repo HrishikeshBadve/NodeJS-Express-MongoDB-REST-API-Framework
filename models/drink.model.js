@@ -23,7 +23,13 @@ const DrinkSchema = mongoose.Schema(
 
         image: {
             type: String,
-            required: false
+            required: false,
+            validate: {
+                validator: function(v) {
+                    return /^https?:\/\/.+\.(jpg|jpeg|png|gif)$/.test(v);
+                },
+                message: props => `${props.value} is not a valid image URL!`
+            }
         },
     },
     {

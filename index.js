@@ -1,88 +1,95 @@
-const express = require('express')
+require('dotenv').config();
+const express = require('express');
 const mongoose = require('mongoose');
 const Drink = require('./models/drink.model.js');
-const app = express()
+const app = express();
 
 app.use(express.json());
-
 
 app.get('/', (req, res) => {
     res.send("Hello from Node API Server");
 });
 
 app.get('/api/drinks', async (req, res) => {
-    try{
+    try {
         const drinks = await Drink.find({});
         res.status(200).json(drinks);
-    } catch(error) {
-        res.status(500).json({message: error.message});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 
-app.get('/', (req, res) => {
-    res.send("Hello from Node API Server Updated");
-});
-
 app.get('/api/drink/:id', async (req, res) => {
-    try{
+    try {
         const { id } = req.params;
-        const drinks = await Drink.findById(id);
-        res.status(200).json(drinks);
-    } catch(error) {
-        res.status(500).json({message: error.message});
+        const drink = await Drink.findById(id);
+
+        if (!drink) {
+            return res.status(404).json({ message: "Drink not found" });
+        }
+
+        res.status(200).json(drink);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 app.post('/api/drinks', async (req, res) => {
-    try{
+    try {
         const drink = await Drink.create(req.body);
-        res.status(200).json(drink);
+        res.status(201).json(drink);
     } catch (error) {
-        res.status(500).json({message: error.message});
+        if (error.name === 'ValidationError') {
+            res.status(400).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: error.message });
+        }
     }
 });
 
-//Update a Drink
 app.put('/api/drink/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const drink = await Drink.findByIdAndUpdate(id, req.body);
+        const drink = await Drink.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
 
-        if(!drink) {
-            return (res.status(404).json({message: "Drink not found"}));
+        if (!drink) {
+            return res.status(404).json({ message: "Drink not found" });
         }
 
-        const updatedDrink = await Drink.findById(id);
-        res.status(200).json(updatedDrink);
-
+        res.status(200).json(drink);
     } catch (error) {
-        res.status(500).json({message: error.message});
+        if (error.name === 'ValidationError') {
+            res.status(400).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: error.message });
+        }
     }
-})
+});
 
-//Delete a Drink
 app.delete('/api/drink/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const drink = await Drink.findByIdAndDelete(id);
 
-        if(!drink) {
-            return(res.status(404).json({message: "Drink not found"}));
+        if (!drink) {
+            return res.status(404).json({ message: "Drink not found" });
         }
-        res.status(200).json({message: "Drink deleted successfully"});
 
+        res.status(200).json({ message: "Drink deleted successfully" });
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 });
 
-mongoose.connect("mongodb+srv://admin:AKnXAx8saUBDLWio@backenddb.slbjhbt.mongodb.net/Node-API?retryWrites=true&w=majority&appName=BackendDB")
-.then(() => {
-    console.log("Connected to the database!");
-    app.listen(3000, () => {
-        console.log('Server is running on port 3000');
+const PORT = process.env.PORT || 3000;
+
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => {
+        console.log("Connected to the database!");
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    })
+    .catch(() => {
+        console.log("Connection failed!");
     });
-})
-.catch(() => {
-    console.log("Connection failed!");
-});
