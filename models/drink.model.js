@@ -1,5 +1,35 @@
 const mongoose = require('mongoose');
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Drink:
+ *       type: object
+ *       required:
+ *         - name
+ *         - price
+ *         - drinkType
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: The name of the drink
+ *         price:
+ *           type: number
+ *           description: The price of the drink
+ *         drinkType:
+ *           type: string
+ *           description: The type of the drink
+ *         image:
+ *           type: string
+ *           description: URL to the image of the drink
+ *       example:
+ *         name: Lemonade
+ *         price: 1.99
+ *         drinkType: Soft Drink
+ *         image: 'http://example.com/lemonade.jpg'
+ */
+
 const DrinkSchema = mongoose.Schema(
     {
         name: {
